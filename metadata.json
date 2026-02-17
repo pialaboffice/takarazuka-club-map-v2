@@ -1,0 +1,7 @@
+{
+  "name": "宝塚市 地域部活動ナビ",
+  "description": "宝塚市の中学校地域部活動への移行状況や、クラブ活動の場所、費用、頻度などを地図とリストで簡単に確認できるポータルサイトです。",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
