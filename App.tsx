@@ -26,16 +26,57 @@ const createSchoolIcon = () =>
   });
 
 const getMarkerIcon = (status: '活動中' | '調整中' | '検討中') => {
-  const color = status === '活動中' ? 'green' : 'orange';
-  return new L.Icon({
-    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
+  const color =
+    status === '活動中'
+      ? '#22c55e' // green-500
+      : status === '調整中'
+      ? '#fb923c' // orange-400
+      : '#9ca3af'; // gray-400
+
+  // ピンっぽい形の divIcon（外部画像不要・高速・消えない）
+  return L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        position: relative;
+        width: 26px;
+        height: 26px;
+        background: ${color};
+        border: 3px solid #fff;
+        border-radius: 9999px;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      ">
+        <div style="
+          position: absolute;
+          left: 50%;
+          bottom: -10px;
+          transform: translateX(-50%) rotate(45deg);
+          width: 14px;
+          height: 14px;
+          background: ${color};
+          border-right: 3px solid #fff;
+          border-bottom: 3px solid #fff;
+          border-bottom-right-radius: 3px;
+          box-shadow: 6px 6px 12px rgba(0,0,0,0.10);
+        "></div>
+        <div style="
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 8px;
+          height: 8px;
+          background: rgba(255,255,255,0.95);
+          border-radius: 9999px;
+        "></div>
+      </div>
+    `,
+    iconSize: [26, 36],
+    iconAnchor: [13, 34], // 先端に合わせる
+    popupAnchor: [0, -34],
   });
 };
+
 
 // 地図の中心を移動させるコンポーネント
 const RecenterMap: React.FC<{ club: Club | null }> = ({ club }) => {
@@ -293,16 +334,13 @@ const App: React.FC = () => {
             ))}
 
             {/* 団体（クラスタリング） */}
-            <MarkerClusterGroup chunkedLoading>
-              {filteredClubs
-                .filter((club) => club.coordinates[0] !== 0 || club.coordinates[1] !== 0)
-                .map((club) => (
-                  <Marker
-                    key={club.id}
-                    position={club.coordinates}
-                    icon={getMarkerIcon(club.status)}
-                    eventHandlers={{ click: () => setSelectedClub(club) }}
-                  >
+           <MarkerClusterGroup
+            chunkedLoading
+            chunkInterval={50}
+            chunkDelay={10}
+            removeOutsideVisibleBounds
+            >
+
                     <Popup>
                       <div className="p-1 min-w-[180px]">
                         <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">
