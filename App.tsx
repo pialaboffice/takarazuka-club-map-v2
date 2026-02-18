@@ -102,6 +102,22 @@ const RecenterMap: React.FC<{ club: Club | null }> = ({ club }) => {
 
   return null;
 };
+const toLatLng = (coords: any): [number, number] | null => {
+  if (!Array.isArray(coords) || coords.length < 2) return null;
+
+  const a = Number(coords[0]);
+  const b = Number(coords[1]);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  if (a === 0 && b === 0) return null;
+
+  // 1) 通常: [lat,lng]
+  if (Math.abs(a) <= 90 && Math.abs(b) <= 180) return [a, b];
+
+  // 2) 逆の可能性: [lng,lat]
+  if (Math.abs(b) <= 90 && Math.abs(a) <= 180) return [b, a];
+
+  return null;
+};
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'map' | 'list'>('map');
@@ -346,11 +362,12 @@ const App: React.FC = () => {
   } as any)}
 >
   {filteredClubs
-    .filter((club) => club.coordinates[0] !== 0 || club.coordinates[1] !== 0)
-    .map((club) => (
+    .map((club) => ({ club, latlng: toLatLng(club.coordinates) }))
+    .filter((x) => x.latlng)
+    .map(({ club, latlng }) => (
       <Marker
         key={club.id}
-        position={club.coordinates}
+        position={latlng as [number, number]}
         icon={getMarkerIcon(club.status)}
         eventHandlers={{ click: () => setSelectedClub(club) }}
       >
