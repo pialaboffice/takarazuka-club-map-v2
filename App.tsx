@@ -352,22 +352,23 @@ const App: React.FC = () => {
 
         {/* Map View */}
         <section className={`flex-1 relative bg-gray-200 ${activeTab === 'map' ? 'block' : 'hidden md:block'}`}>
-          <MapContainer
-            center={[34.81, 135.36]}
-            zoom={13}
-            className="w-full h-full"
-            zoomControl={false}
-            preferCanvas={true}
-            updateWhenZooming={false}
-            updateWhenIdle={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              updateWhenIdle={true}
-              updateWhenZooming={false}
-              keepBuffer={2}
-            />
+        <MapContainer
+          center={[34.81, 135.36]}
+          zoom={13}
+          className="w-full h-full"
+          zoomControl={false}
+          preferCanvas={true}
+          updateWhenIdle={false}
+          updateWhenZooming={true}
+          inertia={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            keepBuffer={6}
+            updateWhenIdle={false}
+            updateWhenZooming={true}
+          />
 
             {/* 学校拠点 */}
             {SCHOOLS.map((school) => {
