@@ -333,14 +333,24 @@ const App: React.FC = () => {
               </Marker>
             ))}
 
-            {/* 団体（クラスタリング） */}
-           <MarkerClusterGroup
-            chunkedLoading
-            chunkInterval={50}
-            chunkDelay={10}
-            removeOutsideVisibleBounds
-            >
-
+{/* 団体（クラスタリング） */}
+<MarkerClusterGroup
+  {...({
+    chunkedLoading: true,
+    chunkInterval: 50,
+    chunkDelay: 10,
+    removeOutsideVisibleBounds: true,
+  } as any)}
+>
+  {filteredClubs
+    .filter((club) => club.coordinates[0] !== 0 || club.coordinates[1] !== 0)
+    .map((club) => (
+      <Marker
+        key={club.id}
+        position={club.coordinates}
+        icon={getMarkerIcon(club.status)}
+        eventHandlers={{ click: () => setSelectedClub(club) }}
+      >
                     <Popup>
                       <div className="p-1 min-w-[180px]">
                         <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">
