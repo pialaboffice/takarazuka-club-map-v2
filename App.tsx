@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { CLUBS, SCHOOLS } from './data';
 import { Club, ClubCategory } from './types';
-import MarkerClusterGroup from 'react-leaflet-cluster';
 
 /**
  * 座標の揺れ（形式違い）を吸収：
@@ -26,7 +25,6 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 const toLatLng = (coords: any): [number, number] | null => {
   if (coords == null) return null;
 
-  // 1) "34.81,135.36"
   if (typeof coords === 'string') {
     const parts = coords.split(',').map((s) => s.trim());
     if (parts.length >= 2) {
@@ -40,7 +38,6 @@ const toLatLng = (coords: any): [number, number] | null => {
     return null;
   }
 
-  // 2) {lat,lng} / {latitude,longitude}
   if (typeof coords === 'object' && !Array.isArray(coords)) {
     const a = Number((coords as any).lat ?? (coords as any).latitude);
     const b = Number((coords as any).lng ?? (coords as any).lon ?? (coords as any).longitude);
@@ -51,7 +48,6 @@ const toLatLng = (coords: any): [number, number] | null => {
     return null;
   }
 
-  // 3) [a,b]
   if (!Array.isArray(coords) || coords.length < 2) return null;
 
   const a = Number(coords[0]);
@@ -59,13 +55,13 @@ const toLatLng = (coords: any): [number, number] | null => {
   if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
   if (a === 0 && b === 0) return null;
 
-  if (Math.abs(a) <= 90 && Math.abs(b) <= 180) return [a, b]; // [lat,lng]
-  if (Math.abs(b) <= 90 && Math.abs(a) <= 180) return [b, a]; // [lng,lat]
+  if (Math.abs(a) <= 90 && Math.abs(b) <= 180) return [a, b];
+  if (Math.abs(b) <= 90 && Math.abs(a) <= 180) return [b, a];
 
   return null;
 };
 
-// カスタムマーカーアイコン（学校）
+// 学校マーカー（文）
 const createSchoolIcon = () =>
   L.divIcon({
     className: 'school-marker',
@@ -74,7 +70,7 @@ const createSchoolIcon = () =>
     iconAnchor: [16, 16],
   });
 
-// ピンっぽい形の divIcon（外部画像不要・高速・消えない）＋色分け
+// クラブの色付きピン（外部画像不要・消えにくい）
 const markerIconCache: Record<'活動中' | '調整中' | '検討中', L.DivIcon> = {
   活動中: L.divIcon({ className: '', html: '' }),
   調整中: L.divIcon({ className: '', html: '' }),
@@ -118,15 +114,10 @@ const buildPinHtml = (color: string) => `
 `;
 
 const getMarkerIcon = (status: '活動中' | '調整中' | '検討中') => {
-  // 既に作ってあれば再利用（大量マーカーでも軽い）
   if ((markerIconCache[status] as any)._built) return markerIconCache[status];
 
   const color =
-    status === '活動中'
-      ? '#22c55e' // green-500
-      : status === '調整中'
-      ? '#fb923c' // orange-400
-      : '#9ca3af'; // gray-400
+    status === '活動中' ? '#22c55e' : status === '調整中' ? '#fb923c' : '#9ca3af';
 
   const icon = L.divIcon({
     className: '',
@@ -141,20 +132,17 @@ const getMarkerIcon = (status: '活動中' | '調整中' | '検討中') => {
   return icon;
 };
 
-// 地図の中心を移動させるコンポーネント
+// 地図の中心を移動
 const RecenterMap: React.FC<{ club: Club | null }> = ({ club }) => {
   const map = useMap();
   const last = React.useRef<string>('');
 
   useEffect(() => {
     if (!club) return;
-
     const latlng = toLatLng((club as any).coordinates);
     if (!latlng) return;
 
     const [lat, lng] = latlng;
-
-    // 同じ対象への連続 flyTo を抑制（負荷軽減）
     const key = `${club.id}:${lat}:${lng}`;
     if (last.current === key) return;
     last.current = key;
@@ -174,8 +162,8 @@ const App: React.FC = () => {
   const schoolMarkerIcon = useMemo(() => createSchoolIcon(), []);
 
   const filteredClubs = useMemo(() => {
+    const q = searchQuery.toLowerCase();
     const filtered = CLUBS.filter((club) => {
-      const q = searchQuery.toLowerCase();
       const matchesSearch =
         club.name.toLowerCase().includes(q) ||
         club.subject.toLowerCase().includes(q) ||
@@ -194,19 +182,23 @@ const App: React.FC = () => {
     return [...filtered].sort((a, b) => statusPriority[a.status] - statusPriority[b.status]);
   }, [searchQuery, selectedCategory]);
 
-  // マーカー表示用に「座標が取れるクラブだけ」を事前に作る（ここがポイント）
+  // ★ここが肝：描画に使う座標を事前に確定させる（nullは落とす）
   const clubsWithLatLng = useMemo(() => {
-    return filteredClubs
+    const list = filteredClubs
       .map((club) => ({ club, latlng: toLatLng((club as any).coordinates) }))
       .filter((x) => x.latlng) as Array<{ club: Club; latlng: [number, number] }>;
+
+    // デバッグ：0件なら「座標が全部変」確定（Consoleで気づける）
+    if (list.length === 0 && filteredClubs.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn('[Map] clubsWithLatLng is 0. coordinates format may be unexpected.', filteredClubs[0]);
+    }
+    return list;
   }, [filteredClubs]);
 
   const handleClubSelect = (club: Club) => {
     setSelectedClub(club);
-
-    const latlng = toLatLng((club as any).coordinates);
-    const hasCoords = !!latlng;
-
+    const hasCoords = !!toLatLng((club as any).coordinates);
     if (window.innerWidth < 768 && hasCoords) setActiveTab('map');
   };
 
@@ -390,42 +382,33 @@ const App: React.FC = () => {
               );
             })}
 
-            {/* 団体（クラスタリング） */}
-            <MarkerClusterGroup
-              {...({
-                chunkedLoading: true,
-                chunkInterval: 50,
-                chunkDelay: 10,
-                removeOutsideVisibleBounds: true,
-              } as any)}
-            >
-              {clubsWithLatLng.map(({ club, latlng }) => (
-                <Marker
-                  key={club.id}
-                  position={latlng}
-                  icon={getMarkerIcon(club.status)}
-                  eventHandlers={{ click: () => setSelectedClub(club) }}
-                >
-                  <Popup>
-                    <div className="p-1 min-w-[180px]">
-                      <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">
-                        {club.subject}
-                      </span>
-                      <h4 className="font-bold text-sm text-gray-900 mt-1">{club.name}</h4>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedClub(club);
-                        }}
-                        className="mt-3 w-full text-center bg-gray-900 text-white text-[10px] py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors"
-                      >
-                        詳細を見る
-                      </button>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MarkerClusterGroup>
+            {/* 団体（クラスタなしで確実に表示） */}
+            {clubsWithLatLng.map(({ club, latlng }) => (
+              <Marker
+                key={club.id}
+                position={latlng}
+                icon={getMarkerIcon(club.status)}
+                eventHandlers={{ click: () => setSelectedClub(club) }}
+              >
+                <Popup>
+                  <div className="p-1 min-w-[180px]">
+                    <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">
+                      {club.subject}
+                    </span>
+                    <h4 className="font-bold text-sm text-gray-900 mt-1">{club.name}</h4>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClub(club);
+                      }}
+                      className="mt-3 w-full text-center bg-gray-900 text-white text-[10px] py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors"
+                    >
+                      詳細を見る
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
 
             {selectedClub && <RecenterMap club={selectedClub} />}
           </MapContainer>
