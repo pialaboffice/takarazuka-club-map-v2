@@ -6,6 +6,14 @@ import { Search, Map as MapIcon, List, Info, ChevronRight, School as SchoolIcon,
 import { CLUBS, SCHOOLS } from './data';
 import { Club, ClubCategory } from './types';
 
+return (
+  <div style={{ height: "100vh", width: "100vw" }}>
+    <MapContainer style={{ height: "100%", width: "100%", zIndex: 1 }} {...props}>
+      ...
+    </MapContainer>
+  </div>
+)
+
 // カスタムマーカーアイコンの定義
 const createSchoolIcon = () => L.divIcon({
   className: 'school-marker',
