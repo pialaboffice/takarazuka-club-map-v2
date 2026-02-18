@@ -207,6 +207,22 @@ const App: React.FC = () => {
       window.open(`https://www.google.com/search?q=${encodeURIComponent('宝塚市 地域部活動 ' + club.name)}`, '_blank');
       return;
     }
+const GAS_URL = "あなたのGASの /exec URL";
+
+await fetch(GAS_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    clubId: selectedClub.id,
+    clubName: selectedClub.name,
+    name,
+    email,
+    phone,
+    message,
+    userAgent: navigator.userAgent,
+    referrer: document.referrer,
+  }),
+});
 
     const urlString = club.url.toLowerCase().trim();
     const invalidKeywords = ['今後', '予定', '検討', 'なし', '未定', '開設', '作成', '確認'];
