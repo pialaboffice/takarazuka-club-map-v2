@@ -28,7 +28,7 @@ jobs:
           pwd
           ls -la
           ls -la package-lock.json || true
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run build
       - run: ls -la
       - run: ls -la dist || true
