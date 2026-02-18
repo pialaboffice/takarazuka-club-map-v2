@@ -323,9 +323,6 @@ const App: React.FC = () => {
               updateWhenZooming={false}
               keepBuffer={2}
             />
-<Marker position={[34.81, 135.36]}>
-  <Popup>TEST MARKER</Popup>
-</Marker>
 
             {/* 学校拠点 */}
             {SCHOOLS.map((school) => (
