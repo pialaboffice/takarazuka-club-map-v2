@@ -5,7 +5,15 @@ import L from 'leaflet';
 import { Search, Map as MapIcon, List, Info, ChevronRight, School as SchoolIcon, Filter, ExternalLink, Mail, Calendar } from 'lucide-react';
 import { CLUBS, SCHOOLS } from './data';
 import { Club, ClubCategory } from './types';
+import MarkerClusterGroup from "react-leaflet-cluster";
 
+<MarkerClusterGroup chunkedLoading>
+  {filteredClubs
+    .filter(club => club.coordinates[0] !== 0 || club.coordinates[1] !== 0)
+    .map(club => (
+      <Marker key={club.id} position={club.coordinates} icon={getMarkerIcon(club.status)} />
+    ))}
+</MarkerClusterGroup>
 
 // カスタムマーカーアイコンの定義
 const createSchoolIcon = () => L.divIcon({
