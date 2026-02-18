@@ -1,6 +1,5 @@
-
 {
-  "name": "宝塚市-地域部活動ナビ",
+  "name": "takarazuka-club-map-v2",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,14 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-leaflet": "^4.2.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet-cluster": "^2.0.0",
+    "lucide-react": "^0.460.0"
   },
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-  "react-leaflet": "^4.2.1",
-  "leaflet": "^1.9.4",
-  "react-leaflet-cluster": "^2.0.0",
-  "lucide-react": "^0.460.0"
-},
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
