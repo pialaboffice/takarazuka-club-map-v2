@@ -317,15 +317,15 @@ const App: React.FC = () => {
             updateWhenIdle={true}
           >
             <TileLayer
-              <Marker position={[34.81, 135.36]}>
-              <Popup>TEST MARKER</Popup>
-              </Marker>
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               updateWhenIdle={true}
               updateWhenZooming={false}
               keepBuffer={2}
             />
+            <Marker position={[34.81, 135.36]}>
+              <Popup>TEST MARKER</Popup>
+            </Marker>
 
             {/* 学校拠点 */}
             {SCHOOLS.map((school) => (
